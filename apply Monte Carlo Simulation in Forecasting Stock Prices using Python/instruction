@@ -1,0 +1,24 @@
+PROJECT:
+•	Run a Monte Carlo Simulation to predict the future stock price of P&G
+
+METHODOLOGY:
+•	Besides the classical NumPy and Pandas, we utilize “norm” from SciPy and some specific Matplotlib features
+• To estimate P&G's historical log returns - 
+  (1) We apply “percent change” method: write “pct_change()” to obtain the simple returns from a provided dataset
+  (2) We create the formula for log returns by using NumPy’s log and then type 1 + the simple returns extracted from our data
+•	Explore their mean and variance for the calculation of the Brownian motion
+•	Compute the drift component: the best approximation of future rates of return of the stock,
+  Assign “stdev” to the standard deviation of log returns
+•	Set up the first Brownian motion element in our simulation - 
+  Brownian motion comprises the sum of the drift and a variance adjusted by “E” to the power of “R”
+•	The second component of the Brownian motion is a random variable, z: obtained by SciPy's norm.ppf()
+  a number corresponding to the distance between the mean and the events, expressed as the number of standard deviations
+•	Utilize NumPy “rand” function to randomize
+•	Include this random element within the “PPF” distribution to obtain the distance from the mean corresponding to
+  each of these randomly generated probabilities
+•	Specify the time intervals be 1,000, to “iterations” attribute the value of 10
+•	Utilize NumPy’s “EXP” function to calculate Euler’s number “E” raised to the power of the expression
+•	Create a price list: each price must equal the product of the price observed the previous day and the simulated daily return
+•	Insert the “daily returns” array by NumPy “zeros like” method
+•	Replace these zeros with the expected stock prices by using a loop that begins in day 1 and ends at day 1,000
+•	Plot it on a graph by using Matplotlib syntax - obtain 10 possible paths of the expected stock price of P&G stock
