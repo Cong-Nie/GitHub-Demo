@@ -1,0 +1,21 @@
+PROBLEM 1 - Planning Cash:
+•	Determine the least costly cash management plan (i.e., minimal net financing costs) for Eagle’s Beach Wear and Gift Shop
+•	The company currently has a beginning cash balance of $40,000 and desires to maintain a balance of at least $25,000 in cash 
+at the end of each month
+•	To accomplish this, the company has several ways of obtaining short-term funds: (1) Delay Payments
+                                                                                  (2) Borrow Against Accounts Receivables
+                                                                                  (3) Short-Term Loan
+•	Assume the company earns 0.5% interest each month on cash held at the beginning of the month
+
+PROBLEM 2 - Workforce Planning:
+•	Determine a training schedule and a lay-off schedule for 6 months that meets the workforce requirements at the minimum cost
+•	The management of a software company is contemplating enrolling their programmers in a month-long intensive training program 
+•	Management believes that successful completion of the program would increase a programmer’s productivity by 20% 
+  and plans to implement a no-layoff policy to encourage participation
+•	Only 90% of the programmers are predicted to complete the training program successfully
+
+METHODOLOGY:
+•	PULP Modeling
+
+RESULT:
+•	Achieved 10/10 (Top 1%) in the Precriptive Analytics course assignment
