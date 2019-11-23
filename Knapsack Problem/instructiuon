@@ -1,0 +1,9 @@
+PROJECT:
+• 500 Knapsack Instances
+• C in U[100,150]
+• Only find out C once you choose which items to put in the knapsack
+• If you go over C, then you get nothing for that knapsack instance
+
+METHODOLOGY:
+• Dynamic Programming
+• Monte Carlo Simulation
