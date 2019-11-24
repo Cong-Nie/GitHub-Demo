@@ -1,0 +1,23 @@
+PROJECT:
+• Utilize portfolio theory to develop a quantitative policy
+
+METHODOLOGY:
+• Utilize R fPortfolio library to calculate the beta value of the Shanghai A-share in February,
+                                   the average yield Rri of each stock in the last three days of February,
+                                   filter out all stocks with Rri > Ri and sort them in absolute value from large to small:
+  (1) β = (cov(R_i,R_m)) / (var(R_m))
+  (2) average_diviation_i = mean(sum((real_return_rate_i - necessary_return_rate_i)^2))^0.5
+  (3) ratio = average_diviation_i / mean(real_return_rate_i)
+• Suppose we are investors with certain risk preferences, take top 10 stocks to build an undervalued stock pool
+• Import the stock pool and conduct the strategy backtest in March on UQER 
+  - When a bull market occurs (the cumulative yield is higher than the CSI 300),
+    choose the investment portfolio chosen from the dynamic trading strategy
+• According to MVO theory, the portfolio can obtain a valid frontier under the mean-variance optimization condition
+                                           (the expected yield of the set combination is the risk-free rate 0.0041),
+                                           and the tangent CAL for this valid frontier will determine a tangent point "T"
+• From point "T", we can get the optimal weight distribution of portfolio w1, w2, w3,
+  Under which the optimal portfolio can achieve risk-free return, especially when a bear market accurs
+                                                             (accumulated yield is lower than CSI 300) 
+                                                      
+RESULT:
+• Quantitative trading strategy application outperformed the market in actual trading by 2.77%
