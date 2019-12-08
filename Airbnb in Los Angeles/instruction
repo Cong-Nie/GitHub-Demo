@@ -1,0 +1,10 @@
+PROJECT:
+• Do data exploration on the most recent datasets containing listing and reviews in Los Angeles from insideairbnb.com
+
+METHODOLOGY:
+• pandasql/sqldf
+• nltk/re/stopwords
+• matplotlib
+
+RESULT:
+• Achieved score 23.13/25.00 (top 3%) of this final project
