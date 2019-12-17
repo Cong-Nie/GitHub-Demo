@@ -1,0 +1,427 @@
+---
+title: "Final Project"
+author: "Individual Project"
+date: "2019/12/11"
+output: pdf_document
+---
+
+# Member:
+## Dominique Nie MSFTA 474148
+
+```{r}
+library(bayesm) 
+library(m537)
+library(m537tools)
+library(xts)
+library(ggplot2)
+library(future.apply)
+library(sqldf)
+library(quantmod)
+library(parallel)
+rm(list = ls())
+```
+
+# Diversification
+## 1.Select 30 stocks that you are interested in. Find their yahoo symbols.
+
+```{r}
+company_symbols = c("AAPL","MSFT","AMZN","FB","GOOG","GOOGL","INTC","CMCSA","CSCO","PEP",
+"ADBE","AMGN","COST","NFLX","NVDA","AVGO","TXN","CHTR","QCOM","SBUX","BKNG","GILD","CELG",
+"MDLZ","FISV","ADP","TMUS","INTU","ISRG","CSX","^gspc")
+
+company_names = c("apple","microsoft","amazon","facebook","alphabetc","alphabeta","intel",
+"comcast","cisco","pepsico","adobe","amgen","costco","netflix","nvidia","broadcom",
+"texasinstruments","chater","qualcomm","starbucks","booking","gilead","celgene","mondelez",
+"fiserv","automaticdata","tmobile","intuit","intuitivesurg","csx","sp500")
+```
+
+*Above are the 30 stocks I selected.*
+
+## 2.Download 4 years of weekly price data for each stock from June 1, 2015 to June 1, 2019.
+
+```{r}
+prmdf = getfinwdat(symbols = company_symbols,
+                   symnames = company_names,
+                   from = "2015-06-01",
+                   to = "2019-06-01")
+```
+
+*4 years of weekly price data for each stock I choose from June 1, 2015 to June 1, 2019 have been downloaded and stored in "prmdf". (All 30 stocks I select in step 1 are available for these 4 years)*
+
+## 3.Assume that the desired portfolio mean return levels are .03, .06, .09 and .12, each in annual terms.
+
+```{r}
+desired_mean_weekly_return = c(.03,.06,.09,.12)/52
+```
+
+*The desired portfolio mean return levels are specified in weekly terms as above.*
+
+## 4.Now form 6 portfolios for each desired return level (each portfolio includes the risk-free asset). Each portfolio has 5, 10, 15, 20, 25 and 30 stocks. The smaller set of assets should be a subset of the larger set.
+## 5.Assume that the stock premium is explained by the Gaussian SURE CAPM model without an intercept.
+## 6.Now form each portfolio, use the default training sample prior. Comment on the prior in the case of the SURE model with 15 assets.
+## 7.Now compute the optimal portfolios for each group of assets at each target portfolio return level. Give the weights of each asset in each portfolio as well as the standard deviation of the optimal portfolios.
+
+```{r}
+set.seed(1)
+portfolio_name = c("sp500")
+loop_names = c("apple","microsoft","amazon","facebook","alphabetc","alphabeta","intel",
+"comcast","cisco","pepsico","adobe","amgen","costco","netflix","nvidia","broadcom",
+"texasinstruments","chater","qualcomm","starbucks","booking","gilead","celgene","mondelez",
+"fiserv","automaticdata","tmobile","intuit","intuitivesurg","csx")
+modelsize = c(1:6)
+mean_std = rep(0,6)
+return_sd = c(.03,.06,.09,.12)
+```
+
+```{r}
+#Question 4
+for (i in 1:6){
+    new_portfolio_name = sample(loop_names,5,replace = FALSE)
+    portfolio_name = c(portfolio_name,new_portfolio_name)   #company names used in portfolio
+    loop_names = setdiff(loop_names,portfolio_name)
+    facfrmls = list()
+    for (j in portfolio_name[-1]){
+        frm = paste(j , "~ prmsp500-1")
+        frm = paste("prm",frm,sep = "")
+        frm = as.formula(frm)
+        facfrmls = append(facfrmls,frm)
+    }   #set model frame list
+    #Question 6
+    if(i == 3){
+        s = 2   #use the last 2 as prediction
+        ns = dim(prmdf)[1] 
+        prmdfn = prmdf[1:(ns-s),]   #sample data
+        n = dim(prmdfn)[1]
+        prmdff = prmdf[-(1:n),]
+        priols = trainpriorsureg(modelfrmls = facfrmls,
+                                 data = prmdfn,trainpct = .15)   
+        print("The prior sample size of portfolio with 15 assets ")
+        print(priols$nt)
+        print("The proir data size of portfolio with 15 assets ")
+        print(priols$n)       
+        print("The total proir data size of portfolio with 15 assets ")
+        print(priols$nn)
+        print("The number of prior beta of portfolio with 15 assets ")
+        print(priols$k)
+        print("The number of eigenvalue of covariance matrix in portfolio with 15 assets ")
+        print(priols$d)
+    }
+    #Question 7
+    capmportls = makebayesportfolioaftersureg(portmean = desired_mean_weekly_return,
+                                              modelfrmls = facfrmls,data = prmdf)
+    #get optimal portfolio solution under four expected return
+    print(paste("The weight of optimal portfolio ", i))
+    print(capmportls$weights)   #the weights of each asset in each portfolio
+    print(paste("The standard deviation of optimal portfolio ", i))
+    print(capmportls$portsd)   #the standard deviation of the optimal portfolios
+    return_sd = cbind(return_sd,capmportls$portsd) 
+}
+```
+
+*The optimal portfolio with 5 stocks is: fiserv, facebook, intel, apple, microsoft, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The optimal portfolio with 10 stocks is: fiserv, facebook, intel, apple, microsoft, mondelez, comcast, intuitivesurg, alphabetc, gilead, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The optimal portfolio with 15 stocks is: fiserv, facebook, intel, apple, microsoft, mondelez, comcast, intuitivesurg, alphabetc, gilead, nvidia, automaticdata, intuit, amazon, chate, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The optimal portfolio with 20 stocks is: fiserv, facebook, intel, apple, microsoft, mondelez, comcast, intuitivesurg, alphabetc, gilead, nvidia, automaticdata, intuit, amazon, chate, broadcom, starbucks, cisco, adobe, booking, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The optimal portfolio with 25 stocks is: fiserv, facebook, intel, apple, microsoft, mondelez, comcast, intuitivesurg, alphabetc, gilead, nvidia, automaticdata, intuit, amazon, chate, broadcom, starbucks, cisco, adobe, booking, pepsico, costco, tmobile, csx, celgene, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The optimal portfolio with 30 stocks is: fiserv, facebook, intel, apple, microsoft, mondelez, comcast, intuitivesurg, alphabetc, gilead, nvidia, automaticdata, intuit, amazon, chate, broadcom, starbucks, cisco, adobe, booking, pepsico, costco, tmobile, csx, celgene, netflix, qualcomm, texasinstruments, amgen, alphabeta, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+## 8.Use ggplot to plot the standard deviation vs. the number of stocks in the assets. Comment on your findings.
+
+```{r}
+return_sd = t(return_sd)   #6*4 matrix
+rownames(return_sd) = NULL
+c = c("5_Assets","10_Assets","15_Assets","20_Assets","25_Assets","30_Assets")
+return_sd = cbind(c, return_sd)
+plt_data = as.data.frame(return_sd)   #6*5 matrix
+colnames(plt_data) = c("Assets_Type",".03_Expected_Earning",".06_Expected_Earning",
+  ".09_Expected_Earning",".12_Expected_Earning")   #rename colunms
+for(i in 2:5){
+    p = ggplot(data = plt_data,aes(x=Assets_Type,y=plt_data[,i]))
+    p1 = p + geom_bar(stat = "identity") + labs(title = colnames(plt_data)[i])
+    p2 = p1 + labs(x = "number of stocks in the assets",
+                   y = "standard deviation")
+    print(p2)   #plot
+}
+```
+
+## 9.Redo questions 5-8 with student-t errors. For each set of assets, use log-marginal likelihoods to find the appropriate-degrees of freedom of the student-t distribution on a grid of 10 equally-spaced values between 3 and 5.
+
+```{r}
+set.seed(1)
+portfolio_name = c("sp500")
+loop_names = c("apple","microsoft","amazon","facebook","alphabetc","alphabeta","intel",
+"comcast","cisco","pepsico","adobe","amgen","costco","netflix","nvidia","broadcom",
+"texasinstruments","chater","qualcomm","starbucks","booking","gilead","celgene","mondelez",
+"fiserv","automaticdata","tmobile","intuit","intuitivesurg","csx")
+modelsize = c(1:6)
+mean_std = rep(0,6)
+```
+
+```{r}
+nug = seq(from = 3,
+          to = 5,
+          by = .20)
+nug = as.matrix(nug);
+return_sd = c(.03,.06,.09,.12)
+```
+
+```{r}
+for(i in 1:6){
+    new_portfolio_name = sample(loop_names,5,replace = FALSE)
+    portfolio_name = c(portfolio_name,new_portfolio_name)   #company names used in portfolio
+    loop_names = setdiff(loop_names,portfolio_name)
+    facfrmls = list()
+    for (j in portfolio_name[-1]){
+        frm = paste(j , "~ prmsp500-1")
+        frm = paste("prm",frm,sep = "")
+        frm = as.formula(frm)
+        facfrmls = append(facfrmls,frm)
+    }   #set model frame list
+
+    datls = suremat(modelfrmls = facfrmls,datdf = prmdf)
+    outls = future_mapply("MCMCsuret",nu = nug,
+                          MoreArgs = list(modelfrm = facfrmls,
+                                          data = prmdf),
+                          SIMPLIFY = FALSE)
+    nug_list = t(logmarglik(outls))
+    nug_df = cbind(nug,nug_list)
+    best_nu = nug_df[which.max(nug_df[,2]),1]
+    print(paste("The best nu of optimal portfolio ", i))
+    print(best_nu)   #find the appropriate-degrees of freedom
+   
+    capmportls = makebayesportfolioaftersuret(portmean = desired_mean_weekly_return,
+                                              modelfrmls = facfrmls,data = prmdf,nu = best_nu)
+    #get optimal portfolio solution under four expected return
+    print(paste("The weight of optimal portfolio ", i))
+    print(capmportls$weights)   #the weights of each asset in each portfolio
+    print(paste("The weight of optimal portfolio ", i))
+    print(capmportls$portsd)   #the standard deviation of the optimal portfolios
+    return_sd = cbind(return_sd,capmportls$portsd)
+}
+```
+
+```{r}
+return_sd = t(return_sd)
+rownames(return_sd) = NULL
+c = c("5_Assets","10_Assets","15_Assets","20_Assets","25_Assets","30_Assets")
+return_sd = cbind(c, return_sd)
+plt_data = as.data.frame(return_sd)
+colnames(plt_data) = c("Assets_Type",".03_Expected_Earning",".06_Expected_Earning",
+  ".09_Expected_Earning",".12_Expected_Earning")   #rename colunms
+for(i in 2:5){
+    p = ggplot(data = plt_data,aes(x=Assets_Type,y=plt_data[,i]))
+    p1 = p + geom_bar(stat = "identity") + labs(title = colnames(plt_data)[i])
+    p2 = p1 + labs(x = "number of stocks in the assets",
+                   y = "standard deviation")
+    print(p2)   #plot
+}
+```
+
+*The best nu for the optimal portfolio with 5 stocks is 4. The optimal portfolio is: fiserv, facebook, intel, apple, microsoft, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The best nu for the optimal portfolio with 10 stocks is 3.8. The optimal portfolio is: fiserv, facebook, intel, apple, microsoft, qualcomm, gilead, adobe, netflix, starbucks, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The best nu for the optimal portfolio with 15 stocks is 3.8. The optimal portfolio is: fiserv, facebook, intel, apple, microsoft, qualcomm, gilead, adobe, netflix, starbucks, alphabetc, costco, chater, booking, tmobile, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The best nu for the optimal portfolio with 20 stocks is 3. The optimal portfolio is: fiserv, facebook, intel, apple, microsoft, qualcomm, gilead, adobe, netflix, starbucks, alphabetc, costco, chater, booking, tmobile, mondelez, texasinstruments, amazon, cisco, automaticdata, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The best nu for the optimal portfolio with 25 stocks is 3. The optimal portfolio is: fiserv, facebook, intel, apple, microsoft, qualcomm, gilead, adobe, netflix, starbucks, alphabetc, costco, chater, booking, tmobile, mondelez, texasinstruments, amazon, cisco, automaticdata, intuit, broadcom, comcast, csx, nvidia, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+*The best nu for the optimal portfolio with 30 stocks is 3. The optimal portfolio is: fiserv, facebook, intel, apple, microsoft, qualcomm, gilead, adobe, netflix, starbucks, alphabetc, costco, chater, booking, tmobile, mondelez, texasinstruments, amazon, cisco, automaticdata, intuit, broadcom, comcast, csx, nvidia, alphabeta, pepsico, celgene, intuitivesurg, amgen, rskfree. The weights of each asset and the standard deviation of the optimal portfolio for each annual return level are shown as above.*
+
+
+# Tuna Market Share
+## 1.Load the tuna data set from package bayesm. There are seven brands in the data set. For each brand, estimate separate independent student-t models where logsales for each product is regressed on an intercept, the product’s log price and display activity. Use the default training sample prior and use log-marginal likelihoods to find the appropriate-degrees of freedom of the student-t distribution on a grid of 20 equally-spaced values between 3 and 6.
+
+```{r}
+#extract data and specify models
+skdf = extracttunabrand("sk")
+modelsk = log(salessk)~log(pricesk)+dispsk
+csdf = extracttunabrand("cs")
+modelcs = log(salescs)~log(pricecs)+dispcs
+bbdf = extracttunabrand("bb")
+modelbb = log(salesbb)~log(pricebb)+dispbb
+bbcdf = extracttunabrand("bbc")
+modelbbc = log(salesbbc)~log(pricebbc)+dispbbc
+gedf = extracttunabrand("ge")
+modelge = log(salesge)~log(pricege)+dispge
+bbldf = extracttunabrand("bbl")
+modelbbl = log(salesbbl)~log(pricebbl)+dispbbl
+hhcldf = extracttunabrand("hhcl")
+modelhhcl = log(saleshhcl)~log(pricehhcl)+disphhcl
+```
+
+```{r}
+#generate a grid of 20 equally-spaced values between 3 and 6
+nug = seq(from = 3,to = 6,by = .15)
+```
+
+```{r}
+#sk - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = skdf,
+                                      modelfrm = modelsk), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A1 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+#cs - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = csdf,
+                                      modelfrm = modelcs), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A2 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+#bb - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = bbdf,
+                                      modelfrm = modelbb), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A3 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+#bbc - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = bbcdf,
+                                      modelfrm = modelbbc), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A4 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+#ge - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = gedf,
+                                      modelfrm = modelge), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A5 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+#bbl - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = bbldf,
+                                      modelfrm = modelbbl), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A6 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+#hhcl - estimate independent student-t model
+outls = future_mapply("MCMCregresst",nu = nug,
+                      MoreArgs = list(data = hhcldf,
+                                      modelfrm = modelhhcl), 
+                      SIMPLIFY = FALSE)
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A7 = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+```{r}
+result = rbind(A1,A2,A3,A4,A5,A6,A7)
+rownames(result) = c("sk", "cs", "bb", "bbc", "ge", "bbl", "hhcl")
+result
+```
+
+*The estimated separate independent student-t models for each brand are shown as above.*
+
+## 2.Now estimate a SURE student-t model for the seven brands. Again use marginal likelihoods to find the appropriate degrees of freedom on a grid of 20 equally-spaced values between 3 and 6. From your estimation results, which pair of products is the most correlated?
+
+```{r}
+suremodel = list(modelsk,modelcs,modelbb,modelbbc,modelge,modelbbl,modelhhcl)
+suredf = cbind(skdf,csdf,bbdf,bbcdf,gedf,bbldf,hhcldf)
+outls = future_mapply("MCMCsuret",nu = nug,
+                      MoreArgs = list(data = suredf,
+                                      modelfrm = suremodel), 
+                      SIMPLIFY = FALSE)
+```
+
+```{r}
+A = cbind(nug,t(logmarglik(outls))) 
+colnames(A) = c("nu","logmarg") 
+ind = which.max(A[,2])
+A = A[ind,,drop = F]
+print(A[ind,,drop = F])
+```
+
+*The best degree of freedom for the SURE student-t model is 3.*
+
+```{r}
+tunasuret = MCMCsuret(modelfrmls = suremodel,
+                      data = suredf,nu = 3)
+```
+
+```{r}
+dd = attr(tunasuret, "dd")
+k = attr(tunasuret, "k")
+sigm = tunasuret[,(k+1):(k+dd)]
+Sigma = apply(sigm,2,"mean")
+Sigma = xpnd(Sigma)
+rho = cov2cor(Sigma)
+diag(rho) = rep(0,7)
+cbind(c("sk", "cs", "bb", "bbc","ge","bbl","hhcl")[which.max(rho)%%7],
+      c("sk", "cs","bb","bbc","ge","bbl","hhcl")[which.max(rho)%/%7+1])
+```
+
+*The most correlated pair of products is "bb" and "bbl".*
+
+## 3.Now suppose you are managing the sales of Star Kist 6 oz, and you want to know what price to charge for your product, given the other six other products in the market. Suppose your main competitor is Chicken of the Sea 6 oz and you would like to generate (on average) twice the total sales compared to Chicken of the Sea 6 oz. How would you determine your own price?
+
+```{r}
+result2 = cbind()
+psk = c(0.44,0.54,0.64,0.74,0.84)
+for (i in 1:5){
+    b = cbind(0,psk[i],0.31,0,0.70,0.35,0,1.80,0.29,0,0.85,
+              0.23,0,1.40,0.35,0,3.49,0.25,0,0.75,0.24)
+    predf1 = data.frame(b)
+    colnames(predf1) = names(suredf)
+    pre1 = predictsuret(thetam = tunasuret,pdatdf = predf1,
+                        nu = 3,logr = F)
+    pre1 = pre1[[1]]
+    sk = exp(mean(pre1[1,]))
+    cs = exp(mean(pre1[2,]))
+    ratio = (sk)/(cs)
+    temp = c((sk),(cs),ratio)
+    result2 = rbind(result2,temp)
+}
+rownames(result2) = c(0.44,0.54,0.64,0.74,0.84)
+result2
+```
+
+*I would determine Star Kist price as 0.44, which is expected to be the best among the prices given.*
+
