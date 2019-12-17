@@ -1,1 +1,13 @@
-db
+PROJECT:
+• Analyze YouTube dataset to find and visualize most frequent words of description, most popular categories, number of total likes among different 
+countries, and sentiment analysis by calculating total sentiment scores
+
+METHODOLOGY:
+• Cloudera
+• Python
+• R (Sentiment Analysis in NLP)
+• Tableau
+
+RESULT:
+• Achieved score 34.9/35.0 (Top 1) in the final report and 39/40 (Top 3) in the final presentation of the course: Big Data and 
+Cloud Computing
