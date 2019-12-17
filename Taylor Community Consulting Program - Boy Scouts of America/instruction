@@ -1,1 +1,18 @@
-we
+PROJECT:
+• Provide the Greater St. Louis Area Council, Boy Scouts of America with a long-term impact assessment of participation in 
+Boy Scouts educational programs on the participants' adult life quality
+• Identify which experiences as a boy scout are most influential on the impact areas identified
+
+METHODOLOGY:
+• INN - Variable search
+• Impact Study (identified four key impact areas: Citizenship, Leadership, Chararcter Development, Fitness/Wellbeing)
+• Impact Assessment:
+  Citizenship = Financial Responsibility + Volunteering + Patriotism
+  Leadership = Teamwork + Willingness to take leadership role + Goal/Life plan
+  Chararcter Development = Self-confidence + Ethical Behavior
+  Fitness/Wellbeing = Physical Fitness + Mental Health
+• Qualtrics & MTurk (Multiple Choice questions, Rating Scale questions, Likert Scale questions, Matrix questions)
+• Python pandas, numpy, pandasql, sklearn, matplotlib, seaborn libraries
+
+RESULT:
+• Achieved the highest score in TCCP Final Presentation and client (Boy Scouts of America) satisfaction
