@@ -1,0 +1,18 @@
+PROJECT:
+• Finance Project: Diversification Effects (the portfolio risk can be reduced by investing in a variety of assets)
+• Marketing Project: Tuna Market Share
+
+METHODOLOGY:
+• R:
+  Probability, Simulation and Bayes ()
+  Regression (Bayes inference, Comparison of models, Prediction, Predictive likelihood, Interpretation of marginal likelihood, 
+  Change-point regression)
+  Seemingly Unrelated Regression (SURE) Modeling
+  Optimal Mean-Variance Portfolio Construction (Objective function, Optimal weights, Sharpe-ratio, Model for risk factors,
+  Model for excess returns of assets)
+  Panel Data: Random Effects Modeling (Panel modeling, Bayesian analysis, Estimating the model, 
+  Effects of DISP hetrogeneous/homogeneous, Prediction)
+  ggplot2
+
+RESULT:
+• Achieved full score (top 1%) of this final project in course: Data Analysis, Forecasting & Risk Analysis
