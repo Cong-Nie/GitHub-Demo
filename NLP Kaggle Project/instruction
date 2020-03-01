@@ -2,8 +2,8 @@ PROJECT
 • Predict the similarity between two groups of unstructured sentences
 
 METHODOLOGY
-• Utilized Python Word2vec library to transform words into vectors and calculate Cosine, Jaccard and Manhaton distances. Utilized Python fuzzywuzzy library to obtain fuzzywuzzy ratio
-• Combined basic features (word length, character length) with the distances and ratio to form the feature pool, then trained XGBoost model to give the prediction through k-fold cross validation
+• Utilized Python NLTK library to tokenize, lemmatize and stem sentences. Utilized Word2vec function to transform words into vectors and calculate Cosine, Jaccard and Manhaton distances as features
+• Combined basic features (word length, character length) with the distances and FuzzyWuzzy ratio (obtained from Python FuzzyWuzzy library) to form the feature pool, then trained XGBoost model to give the prediction through K-fold cross validation
 
 RESULT
 • Achieved 82% accuracy rate (Top 10%) in predicting the level of similarity between two groups of sentences
